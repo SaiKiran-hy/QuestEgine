@@ -9,5 +9,5 @@ class Config:
     SUPPORTED_FILE_TYPES = ["pdf", "csv", "docx", "txt"]
     CHUNK_SIZE = 10000
     MAX_TOKENS = 30000
-    MODEL_NAME = "gemini-1.5-flash"  # Updated to use the latest free model
+    MODEL_NAME = "gemini-2.0-flash-lite"  # Updated to use Gemini 2.0 Flash-Lite
     BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models/"
