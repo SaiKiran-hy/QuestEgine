@@ -153,7 +153,7 @@ if st.session_state.uploaded_files and st.session_state.current_file:
                 if message["role"] == "user":
                     st.chat_message("user").markdown(f"*You:* {message['content']}")
                 else:
-                    st.chat_message("assistant").markdown(f"*AI:* {message['content']}")
+                    st.chat_message("assistant").markdown(f"*QuestEngine:* {message['content']}")
         
         # User input
         question = st.chat_input("Ask a question about the document...")
