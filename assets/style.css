@@ -1,0 +1,141 @@
+/* Custom styles for Document Analyzer */
+
+/* Global styles */
+:root {
+    --primary-color: #2b5876;
+    --secondary-color: #4e4376;
+    --accent-color: #00bfa5;
+    --text-color: #2c3e50;
+    --background-color: #ffffff;
+    --card-background: #f8f9fa;
+    --border-color: #e9ecef;
+}
+
+/* Dark theme */
+[data-theme="dark"] {
+    --text-color: #f8f9fa;
+    --background-color: #1a1a1a;
+    --card-background: #2d2d2d;
+    --border-color: #404040;
+}
+
+/* Typography */
+body {
+    color: var(--text-color);
+    background-color: var(--background-color);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* Cards and containers */
+.stCard {
+    background-color: var(--card-background);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    transition: transform 0.2s ease;
+}
+
+.stCard:hover {
+    transform: translateY(-2px);
+}
+
+/* Buttons */
+.stButton > button {
+    background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 0.5rem 1rem;
+    transition: all 0.3s ease;
+}
+
+.stButton > button:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
+/* File upload area */
+.uploadedFile {
+    border: 2px dashed var(--border-color);
+    border-radius: 8px;
+    padding: 1rem;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.uploadedFile:hover {
+    border-color: var(--accent-color);
+}
+
+/* Chat interface */
+.chat-message {
+    padding: 1rem;
+    margin: 0.5rem 0;
+    border-radius: 8px;
+    max-width: 80%;
+}
+
+.user-message {
+    background-color: var(--primary-color);
+    color: white;
+    margin-left: auto;
+}
+
+.assistant-message {
+    background-color: var(--card-background);
+    border: 1px solid var(--border-color);
+    margin-right: auto;
+}
+
+/* Progress bars */
+.stProgress > div {
+    background: linear-gradient(45deg, var(--primary-color), var(--accent-color));
+}
+
+/* Tabs */
+.stTabs {
+    border-bottom: 2px solid var(--border-color);
+}
+
+.stTab {
+    color: var(--text-color);
+    padding: 0.5rem 1rem;
+    margin-right: 0.5rem;
+    border-radius: 4px 4px 0 0;
+    transition: all 0.3s ease;
+}
+
+.stTab[aria-selected="true"] {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+/* Visualizations */
+.plot-container {
+    background-color: var(--card-background);
+    border-radius: 8px;
+    padding: 1rem;
+    margin: 1rem 0;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .chat-message {
+        max-width: 90%;
+    }
+    
+    .stCard {
+        padding: 0.75rem;
+    }
+}
