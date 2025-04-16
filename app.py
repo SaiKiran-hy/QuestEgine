@@ -11,7 +11,8 @@ from utils.question_answering import (
     setup_gemini_model,
     generate_answer,
     summarize_document,
-    extract_key_points
+    extract_key_points,
+    generate_questions  # Added function import
 )
 from utils.visualizations import (
     generate_dataframe_preview,
@@ -51,6 +52,8 @@ def init_session_state():
         st.session_state.chat_history = {}
     if "model_status" not in st.session_state:
         st.session_state.model_status = "not_initialized"
+    if "active_tab" not in st.session_state:  # Added for tab navigation
+        st.session_state.active_tab = 0
 
 init_session_state()
 
@@ -116,7 +119,7 @@ with st.sidebar:
     # Model status indicator
     st.markdown("---")
     if st.session_state.model_status == "initialized":
-        st.success("✓ Gemini model active")
+        st.success("✓ Quest Engine active")
     elif st.session_state.model_status == "failed":
         st.warning("⚠ Using fallback API mode")
 
@@ -128,8 +131,13 @@ if st.session_state.uploaded_files and st.session_state.current_file:
     st.header(f"📄 {st.session_state.current_file}")
     st.caption(f"File type: {current_file_info['type']} | Size: {current_file_info['size']} KB")
     
-    # Tabs for different functionalities
-    tab1, tab2, tab3, tab4 = st.tabs(["Preview", "Ask Questions", "Visualize", "Summary"])
+    # Tabs for different functionalities - Added the Generated Questions tab
+    tab1, tab2, tab3, tab4, tab5 = st.tabs(["Preview", "Ask Questions", "Visualize", "Summary", "Generated Questions"])
+    
+    # Set active tab if needed
+    if hasattr(st.session_state, 'active_tab'):
+        st._config.set_option(f"active_tab_index", st.session_state.active_tab)
+        st.session_state.active_tab = 0  # Reset after use
     
     with tab1:
         # File preview section
@@ -245,6 +253,16 @@ if st.session_state.uploaded_files and st.session_state.current_file:
                     current_file_info["content"]
                 )
                 st.markdown(summary)
+                
+                # Add download button for summary
+                if summary:
+                    summary_filename = f"{st.session_state.current_file.split('.')[0]}_summary.txt"
+                    st.download_button(
+                        label="📥 Download Summary",
+                        data=summary,
+                        file_name=summary_filename,
+                        mime="text/plain"
+                    )
             except Exception as e:
                 st.error(f"Error generating summary: {str(e)}")
         
@@ -267,6 +285,34 @@ if st.session_state.uploaded_files and st.session_state.current_file:
                 st.markdown(highlighted_text, unsafe_allow_html=True)
             except Exception as e:
                 st.error(f"Error highlighting text: {str(e)}")
+    
+    with tab5:
+        # Generated Questions tab with Ask button removed
+        st.subheader("Questions Generated from Document")
+        
+        if st.button("Generate Questions"):
+            with st.spinner("Generating questions from document..."):
+                try:
+                    questions = generate_questions(
+                        st.session_state.gemini_model,
+                        current_file_info["content"]
+                    )
+                    
+                    if questions:
+                        for i, question in enumerate(questions, 1):
+                            st.write(f"**{i}.** {question}")
+                        
+                        # Add download button for generated questions
+                        questions_text = "\n".join([f"{i+1}. {q}" for i, q in enumerate(questions)])
+                        questions_filename = f"{st.session_state.current_file.split('.')[0]}_questions.txt"
+                        st.download_button(
+                            label="📥 Download Questions",
+                            data=questions_text,
+                            file_name=questions_filename,
+                            mime="text/plain"
+                        )
+                except Exception as e:
+                    st.error(f"Error generating questions: {str(e)}")
 
 else:
     # Welcome screen when no files are uploaded
@@ -279,20 +325,11 @@ else:
     - Ask questions about the documents
     - Visualize data (for CSV files)
     - Get summaries and key points
+    - Generate questions from documents
+    - Download summaries and generated questions
     
     *How to use:*
     1. Upload one or more files using the sidebar
     2. Select a file to analyze
     3. Explore the different tabs to interact with your document
     """)
-    
-    # Replace the placeholder image with an SVG icon
-    st.markdown("""
-    <div style="text-align: center; margin: 20px 0;">
-        <svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect width="200" height="200" rx="20" fill="#2b5876"/>
-            <path d="M50 70L100 120L150 70" stroke="#ffffff" stroke-width="10" stroke-linecap="round"/>
-            <path d="M50 100L100 150L150 100" stroke="#ffffff" stroke-width="10" stroke-linecap="round"/>
-        </svg>
-    </div>
-    """, unsafe_allow_html=True)

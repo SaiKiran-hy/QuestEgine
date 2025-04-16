@@ -1,6 +1,5 @@
 import re
 from typing import List, Tuple
-
 def highlight_key_sections(text: str) -> str:
     """
     Identify and highlight key sections in the text.
@@ -30,10 +29,19 @@ def highlight_key_sections(text: str) -> str:
         if para_type == "heading":
             html_content.append(f'<h3 style="color: #2b5876; background-color: #f0f8ff; padding: 8px; border-radius: 5px;">{para}</h3>')
         elif para_type == "key_info":
-            html_content.append(f'<p style="background-color: #fffaf0; padding: 8px; border-left: 4px solid #ffa500;">{para}</p>')
+            html_content.append(f'<p style="background-color: #f8f9fa; border-left: 4px solid #4285f4; padding: 10px; margin: 10px 0;">{para}</p>')
         elif para_type == "conclusion":
-            html_content.append(f'<p style="background-color: #f0fff0; padding: 8px; border-left: 4px solid #2e8b57;">{para}</p>')
-        else:
+            html_content.append(f'<p style="background-color: #fcf8e3; border: 1px solid #faebcc; padding: 10px; border-radius: 5px;">{para}</p>')
+    
+    # Add non-highlighted paragraphs
+    highlighted_paras = {para for para, _ in important_paragraphs}
+    for para in paragraphs:
+        if para not in highlighted_paras:
             html_content.append(f'<p>{para}</p>')
     
-    return ''.join(html_content)
+    # Generate the final HTML
+    html_output = '<div style="font-family: Arial, sans-serif;">\n'
+    html_output += '\n'.join(html_content)
+    html_output += '\n</div>'
+    
+    return html_output

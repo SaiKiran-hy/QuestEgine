@@ -4,6 +4,7 @@ from typing import Optional
 import tiktoken
 import requests
 import json
+import re
 
 def setup_gemini_model():
     """Initialize and return the Gemini model with fallback to free endpoint."""
@@ -230,3 +231,85 @@ def extract_key_points(model, document_text: str) -> str:
             return generate_answer_with_fallback(prompt)
     except Exception as e:
         return f"Error extracting key points: {str(e)}"
+
+def generate_questions(model, document_text: str) -> list:
+    """Generate relevant questions from the document content."""
+    try:
+        if count_tokens(document_text) > Config.MAX_TOKENS:
+            chunks = chunk_text(document_text)
+            all_questions = []
+            
+            for chunk in chunks:
+                prompt = f"""
+                Based on the following document content, generate 3-5 relevant and insightful questions
+                that someone might want to ask about this information. Make the questions diverse,
+                covering different aspects of the content.
+                
+                Document Content:
+                {chunk}
+                
+                Return just the numbered questions without any additional text or explanations.
+                """
+                
+                if model:
+                    response = model.generate_content(prompt)
+                    all_questions.append(response.text)
+                else:
+                    all_questions.append(generate_answer_with_fallback(prompt))
+            
+            # Combine and deduplicate questions
+            combined_questions = "\n".join(all_questions)
+            
+            dedup_prompt = f"""
+            Here are several sets of questions generated from different parts of a document:
+            
+            {combined_questions}
+            
+            Please review these questions, remove duplicates, and provide a final list of 
+            10 unique and diverse questions that cover the main topics in the document.
+            Return just the numbered questions without any additional text.
+            """
+            
+            if model:
+                final_questions = model.generate_content(dedup_prompt)
+                # Parse questions into a list
+                questions_list = final_questions.text.strip().split('\n')
+                # Clean up numbering and any extra text
+                clean_questions = [q.strip() for q in questions_list if q.strip()]
+                clean_questions = [re.sub(r'^\d+[\.\)]\s*', '', q) for q in clean_questions if re.search(r'\w', q)]
+                return clean_questions
+            
+            fallback_response = generate_answer_with_fallback(dedup_prompt)
+            questions_list = fallback_response.strip().split('\n')
+            clean_questions = [q.strip() for q in questions_list if q.strip()]
+            clean_questions = [re.sub(r'^\d+[\.\)]\s*', '', q) for q in clean_questions if re.search(r'\w', q)]
+            return clean_questions
+                
+        else:
+            prompt = f"""
+            Based on the following document content, generate 10 relevant and insightful questions
+            that someone might want to ask about this information. Make the questions diverse,
+            covering different aspects of the content.
+            
+            Document Content:
+            {document_text}
+            
+            Return just the numbered questions without any additional text or explanations.
+            """
+            
+            if model:
+                response = model.generate_content(prompt)
+                # Parse questions into a list
+                questions_list = response.text.strip().split('\n')
+                # Clean up numbering and any extra text
+                clean_questions = [q.strip() for q in questions_list if q.strip()]
+                clean_questions = [re.sub(r'^\d+[\.\)]\s*', '', q) for q in clean_questions if re.search(r'\w', q)]
+                return clean_questions
+            
+            fallback_response = generate_answer_with_fallback(prompt)
+            questions_list = fallback_response.strip().split('\n')
+            clean_questions = [q.strip() for q in questions_list if q.strip()]
+            clean_questions = [re.sub(r'^\d+[\.\)]\s*', '', q) for q in clean_questions if re.search(r'\w', q)]
+            return clean_questions
+    except Exception as e:
+        return [f"Error generating questions: {str(e)}"]
